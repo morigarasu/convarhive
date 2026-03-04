@@ -1,12 +1,18 @@
 [project]
-name = "bbsarchiver"
+name = "convarhive"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "sqlalchemy>=2.0.47",
+]
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.2",
     "ruff>=0.15.4",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
