@@ -1,10 +1,11 @@
-# from datetime import datetime
+from datetime import datetime
 from typing import List
 
 from sqlalchemy import (
     String,
     Integer,
-    # DateTime,
+    Index,
+    DateTime,
     ForeignKey,
     UniqueConstraint,
 )
@@ -34,8 +35,9 @@ class Thread(Base):
     url: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
     # スレッド作成日時
-    # TODO sqlite3の datetime adapterを自分で作るか、SQLAlchemyが対応するのを待つか
-    # created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    # DONE sqlite3の datetime adapterを自分で作るか, SQLAlchemyが対応するのを待つか
+    # -> mapper_columnの型の設定ミス IntegerからDateTimeに変更
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     # このスレッドに属する投稿一覧
     # back_popilates で Post.thread と対応させる
@@ -63,8 +65,9 @@ class Post(Base):
     handle_name: Mapped[str] = mapped_column(String, nullable=False)
 
     # 投稿日時
-    # TODO sqlite3の datetime adapterを自分で作るか、SQLAlchemyが対応するのを待つか
-    # posted_at: Mapped[datetime] = mapped_column(Integer, nullable=False)
+    # DONE sqlite3の datetime adapterを自分で作るか, SQLAlchemyが対応するのを待つか
+    # -> mapper_columnの型の設定ミス IntegerからDateTimeに変更
+    posted_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     # いいね数
     likes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -72,9 +75,11 @@ class Post(Base):
     content: Mapped[str] = mapped_column(String, nullable=False)
     # 投稿画像URL (画像がない場合はNULL)
     image_url: Mapped[str | None] = mapped_column(String, nullable=True)
-    # 同じスレッド内では post_num は一意にしたいので制約を追加
+    # 同じスレッド内では post_number は一意にしたいので制約を追加
     __table_args__ = (
-        UniqueConstraint("thread_id", "post_num", name="uix_thread_post_num"),
+        UniqueConstraint("thread_id", "post_number", name="uix_thread_post_number"),
+        Index("idx_post_id", "id"),
+        Index("idx_post_thread_id", "thread_id"),
     )
 
     ## リレーション定義
@@ -99,11 +104,6 @@ class Post(Base):
 class PostReference(Base):
     """
     投稿同士の参照関係を表す中間テーブル
-
-    cf:
-    投稿20 >>10 書いた場合
-    20のid → from_post_id
-    10のid → to_post_id
     """
 
     __tablename__ = "post_references"
@@ -119,6 +119,12 @@ class PostReference(Base):
     to_post_id: Mapped[int] = mapped_column(
         ForeignKey("posts.id"),
         nullable=False,
+    )
+
+    # Index作成
+    __table_args__ = (
+        Index("idx_post_ref_from", "from_post_id"),
+        Index("idx_post_ref_to", "to_post_id"),
     )
 
     ## リレーション定義
