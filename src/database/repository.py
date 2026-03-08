@@ -45,20 +45,22 @@ class PostRepository:
 
     def add_all(self, posts: list[Post]):
         """
-        PostのListを使って、まとめてPostを追加する
+        PostのListを使って, まとめてPostを追加する
         """
         self.session.add_all(posts)
 
     def get_by_id(self, post_id: int) -> Post | None:
         return self.session.get(Post, post_id)
 
-    def get_by_thread_and_postnum(self, thread_id: int, post_num: int) -> Post | None:
+    def get_by_thread_and_postnum(
+        self, thread_id: int, post_number: int
+    ) -> Post | None:
         """
         指定したthreadのidと投稿の番号に合致するPostを返す
         """
         return (
             self.session.query(Post)
-            .filter_by(thread_id=thread_id, post_num=post_num)
+            .filter_by(thread_id=thread_id, post_number=post_number)
             .first()
         )
 
@@ -69,7 +71,7 @@ class PostRepository:
         return (
             self.session.query(Post)
             .filter_by(thread_id=thread_id)
-            .order_by(Post.post_num)
+            .order_by(Post.post_number)
             .all()
         )
 
@@ -88,7 +90,7 @@ class PostReferenceRepository:
 
     def add_all(self, references: list[PostReference]):
         """
-        PostReferenceのListを使って、まとめてPostReferenceを追加する
+        PostReferenceのListを使って, まとめてPostReferenceを追加する
         """
         self.session.add_all(references)
 
@@ -145,7 +147,7 @@ class SearchRepository:
             self.session.execute(text(sql))
 
     # 投稿をFTSインデックスへ追加
-    def add2post_index(self, post_id: int, content: str):
+    def add_to_post_index(self, post_id: int, content: str):
         """
         投稿をFTSインデックスに追加する
         """
@@ -158,7 +160,7 @@ class SearchRepository:
         )
 
     # スレッドをFTSインデックスへ追加
-    def add2thread_index(self, thread_id: int, title: str):
+    def add_to_thread_index(self, thread_id: int, title: str):
         """
         投稿をFTSインデックスに追加する
         """
@@ -172,18 +174,18 @@ class SearchRepository:
 
     def rebuild(self):
         """
-        現在存在するFTS5のテーブルを削除し、
+        現在存在するFTS5のテーブルを削除し,
         すべての投稿をFTSインデックスに追加し直す
         """
         self.session.execute(text("DELETE FROM posts_fts"))
         posts = self.session.query(Post).all()
         for post in posts:
-            self.add2post_index(post.id, post.content)
+            self.add_to_post_index(post.id, post.content)
 
         self.session.execute(text("DELETE FROM threads_fts"))
         threads = self.session.query(Thread).all()
         for thread in threads:
-            self.add2thread_index(thread.id, thread.title)
+            self.add_to_thread_index(thread.id, thread.title)
 
     def search_post(self, keyword: str) -> list[Post]:
         """

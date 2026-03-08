@@ -30,7 +30,7 @@ def create_engine_and_session(db_url: str, echo: bool = False):
     # SQLite外部キー有効化
     @event.listens_for(engine, "connect")
     def enable_sqlite_foreign_keys(dbapi_connection, connection_record):
-        # SQLiteではデフォルトで外部キー制約が無効なので、有効化する
+        # SQLiteではデフォルトで外部キー制約が無効なので, 有効化する
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.close()

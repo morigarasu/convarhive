@@ -60,7 +60,7 @@ class Post(Base):
         nullable=False,
     )
     # スレッド内の投稿番号
-    post_num: Mapped[int] = mapped_column(Integer, nullable=False)
+    post_number: Mapped[int] = mapped_column(Integer, nullable=False)
     # ハンドルネーム
     handle_name: Mapped[str] = mapped_column(String, nullable=False)
 
