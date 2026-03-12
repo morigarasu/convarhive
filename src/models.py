@@ -73,8 +73,7 @@ class Post(Base):
     likes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     # 投稿本文
     content: Mapped[str] = mapped_column(String, nullable=False)
-    # 投稿画像URL (画像がない場合はNULL)
-    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+
     # 同じスレッド内では post_number は一意にしたいので制約を追加
     __table_args__ = (
         UniqueConstraint("thread_id", "post_number", name="uix_thread_post_number"),
@@ -83,6 +82,11 @@ class Post(Base):
     )
 
     ## リレーション定義
+    # 投稿画像URL (画像がない場合はNULL)
+    images: Mapped[list["Image"]] = relationship(
+        back_populates="post",
+        cascade="all, delete-orphan",
+    )
     # この投稿が属するスレッド
     thread: Mapped["Thread"] = relationship(
         back_populates="posts",
@@ -98,6 +102,26 @@ class Post(Base):
         foreign_keys="PostReference.to_post_id",
         back_populates="to_post",
         cascade="all, delete-orphan",
+    )
+
+
+class Image(Base):
+    __tablename__ = "images"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    post_id: Mapped[int] = mapped_column(
+        ForeignKey("posts.id"),
+        index=True,
+    )
+
+    image_url: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+    )
+
+    post: Mapped["Post"] = relationship(
+        back_populates="images",
     )
 
 
