@@ -10,17 +10,18 @@ from database.repository import (
 )
 from datetime import datetime
 from models import Thread, Post, PostReference
+from scraper.base.schemas import PostData
 
 
-def create_db():
-    engine, SessionLocal = create_engine_and_session("sqlite:///:memory:", echo=True)
+def create_db(echo: bool = False):
+    engine, SessionLocal = create_engine_and_session("sqlite:///:memory:", echo=echo)
     init_db(engine)
     return SessionLocal
 
 
-def setup_test_db():
+def setup_test_db(echo: bool = False):
 
-    SessionLocal = create_db()
+    SessionLocal = create_db(echo)
 
     # データをdbに追加
     with SessionLocal() as session:
@@ -97,3 +98,71 @@ def setup_test_db():
         session.commit()
 
     return SessionLocal
+
+
+class mok_scraper:
+    def __init__(self, dummy_data):
+        self.dd = dummy_data
+
+    def scrape_thread_and_posts(self, url: str):
+        return (self.dd["thread"], self.dd["post_datas"])
+
+
+test_date = datetime(2026, 3, 2, 13, 35, 0)
+dummy_data = {
+    "thread": Thread(
+        title="テストスレ", url="https://example.com/board/100000", created_at=test_date
+    ),
+    "post_datas": [
+        PostData(
+            post_number=1,
+            handle_name="anon1",
+            posted_at=test_date,
+            likes=0,
+            content="テストスレッド作成",
+            image_urls=[
+                "https://example.com/img/1",
+                "https://example.com/img/2",
+            ],
+            ref_to_nums=[],
+        ),
+        PostData(
+            post_number=2,
+            handle_name="anon",
+            posted_at=test_date,
+            likes=3,
+            content=">>1\n立て乙",
+            image_urls=[],
+            ref_to_nums=[1],
+        ),
+        PostData(
+            post_number=3,
+            handle_name="anon",
+            posted_at=test_date,
+            likes=0,
+            content=">>1 >>2\nお前ら仲いいな",
+            image_urls=[],
+            ref_to_nums=[1, 2],
+        ),
+        PostData(
+            post_number=4,
+            handle_name="anon",
+            posted_at=test_date,
+            likes=0,
+            content="こんにちは",
+            image_urls=[
+                "https://example.com/img/3",
+            ],
+            ref_to_nums=[],
+        ),
+        PostData(
+            post_number=5,
+            handle_name="anon",
+            posted_at=test_date,
+            likes=0,
+            content="Hello",
+            image_urls=[],
+            ref_to_nums=[1, 2, 3],
+        ),
+    ],
+}

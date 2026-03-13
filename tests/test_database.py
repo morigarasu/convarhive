@@ -4,7 +4,7 @@ from database.repository import (
     PostReferenceRepository,
     SearchRepository,
 )
-from setup_test_db import setup_test_db
+from setup_test import setup_test_db
 
 
 def test_thread_repo():
