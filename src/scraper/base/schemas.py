@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+"""
 @dataclass
 class ThreadData:
     title: str
     url: str
     created_at: datetime
+"""
+
 
 @dataclass
 class PostData:
@@ -15,4 +18,4 @@ class PostData:
     likes: int
     content: str
     image_urls: list[str]
-    ref_from_num: list[int]
+    ref_to_nums: list[int]
