@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 
 from scraper.base.schemas import PostData
-from models import Post, Image, PostReference
+from models import Thread, Post, Image, PostReference
 from database.repository import ThreadRepository
 
 
@@ -15,7 +15,13 @@ class Archive:
         """
         与えられたURLのスレッドをアーカイブし, DBにcommitする
         """
-        thread, post_datas = self.scraper.scrape_thread_and_posts(url)
+        thread_data, post_datas = self.scraper.scrape_thread_and_posts(url)
+
+        thread = Thread(
+            url=thread_data.url,
+            title=thread_data.title,
+            created_at=thread_data.created_at,
+        )
 
         posts = []
         for pd in post_datas:
@@ -41,7 +47,7 @@ class Archive:
         last_post_num = self._get_last_post_num(thread.id)
 
         # スクレイピング
-        thread, post_datas = self.scraper.scrape_thread_and_posts(url)
+        _, post_datas = self.scraper.scrape_thread_and_posts(url)
 
         # 差分抽出
         new_post_datas = self._filter_new_posts(post_datas, last_post_num)
@@ -53,7 +59,9 @@ class Archive:
         new_posts = [self._conv_postdata(pd) for pd in new_post_datas]
 
         # DBを保存
-        self.session.add_all(new_posts)
+        for pd in new_posts:
+            thread.posts.append(pd)
+
         self.session.flush()
 
         # Reference生成
@@ -96,13 +104,15 @@ class Archive:
         return references
 
     def _get_last_post_num(self, thread_id: int) -> int:
-        result = select(func.max(Post.post_number)).where(Post.thread_id == thread_id)
+        result = self.session.execute(
+            select(func.max(Post.post_number)).where(Post.thread_id == thread_id)
+        )
         return result.scalar() or 0
 
     def _filter_new_posts(
         self, post_datas: list[PostData], last_post_num: int
     ) -> list[PostData]:
-        [pd for pd in post_datas if pd.post_number > last_post_num]
+        return [pd for pd in post_datas if pd.post_number > last_post_num]
 
     def _update_fts(self):
         pass

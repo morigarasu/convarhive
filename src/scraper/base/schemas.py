@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-"""
+
 @dataclass
 class ThreadData:
     title: str
     url: str
     created_at: datetime
-"""
 
 
 @dataclass

@@ -1,5 +1,5 @@
 from services import Archive
-from setup_test import create_db, mok_scraper, dummy_data
+from setup_test import create_db, mok_scraper, dummy_data, difference_dummy_posts
 from database.repository import (
     ThreadRepository,
     PostRepository,
@@ -28,4 +28,21 @@ def test_archive_thread():
 
 
 def test_update_thread():
-    pass
+    SessionLocal = create_db(echo=True)
+    test_url = dummy_data["thread"].url
+
+    with SessionLocal() as session:
+        archive_srvs = Archive(session, mok_scraper(dummy_data))
+        archive_srvs.archive_thread(test_url)
+
+    with SessionLocal() as session:
+        # add diference data
+        dummy_data["post_datas"].extend(difference_dummy_posts)
+        print("start diff")
+        archive_srvs = Archive(session, mok_scraper(dummy_data))
+        archive_srvs.update_thread(test_url)
+
+    with SessionLocal() as session:
+        post_repo = PostRepository(session)
+
+        assert post_repo.get_by_thread_and_postnum(1, 11).content == "diff 3"

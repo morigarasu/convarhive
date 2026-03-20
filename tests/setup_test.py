@@ -10,7 +10,7 @@ from database.repository import (
 )
 from datetime import datetime
 from models import Thread, Post, PostReference
-from scraper.base.schemas import PostData
+from scraper.base.schemas import ThreadData, PostData
 
 
 def create_db(echo: bool = False):
@@ -34,13 +34,15 @@ def setup_test_db(echo: bool = False):
         # FTSテーブル作成
         search_repo.init_fts_tables()
 
+        test_date = datetime(2026, 3, 2, 13, 35, 0)
+
         # Thread作成
         thread = Thread(
             title="テストスレ",
             url="http://example.com/board/123456",
             # DONE modelsのdatetime adapter待ち
             # -> mapper_columnの型の設定ミス IntegerからDateTimeに変更
-            created_at=datetime(2026, 3, 2, 13, 35, 0),
+            created_at=test_date,
         )
         thread_repo.add(thread)
         session.flush()
@@ -52,7 +54,7 @@ def setup_test_db(echo: bool = False):
             handle_name="太郎",
             # DONE modelsのdatetime adapter待ち
             # -> mapper_columnの型の設定ミス IntegerからDateTimeに変更
-            posted_at=datetime(2026, 3, 2, 13, 35, 0),
+            posted_at=test_date,
             likes=1,
             content="これはテスト投稿です",
         )
@@ -63,7 +65,7 @@ def setup_test_db(echo: bool = False):
             handle_name="次郎",
             # DONE modelsのdatetime adapter待ち
             # -> mapper_columnの型の設定ミス IntegerからDateTimeに変更
-            posted_at=datetime(2026, 3, 2, 13, 35, 0),
+            posted_at=test_date,
             likes=2,
             content=">>1 それな",
         )
@@ -74,7 +76,7 @@ def setup_test_db(echo: bool = False):
             handle_name="三郎",
             # DONE modelsのdatetime adapter待ち
             # -> mapper_columnの型の設定ミス IntegerからDateTimeに変更
-            posted_at=datetime(2026, 3, 2, 13, 35, 0),
+            posted_at=test_date,
             likes=1,
             content=">>1 kwsk",
         )
@@ -110,9 +112,7 @@ class mok_scraper:
 
 test_date = datetime(2026, 3, 2, 13, 35, 0)
 dummy_data = {
-    "thread": Thread(
-        title="テストスレ", url="https://example.com/board/100000", created_at=test_date
-    ),
+    "thread": ThreadData(title="テストスレ", url="dummy_url", created_at=test_date),
     "post_datas": [
         PostData(
             post_number=1,
@@ -156,7 +156,7 @@ dummy_data = {
             ref_to_nums=[],
         ),
         PostData(
-            post_number=5,
+            post_number=6,
             handle_name="anon",
             posted_at=test_date,
             likes=0,
@@ -166,3 +166,33 @@ dummy_data = {
         ),
     ],
 }
+
+difference_dummy_posts = [
+    PostData(
+        post_number=7,
+        handle_name="difference",
+        posted_at=test_date,
+        likes=0,
+        content="diff 1",
+        image_urls=[],
+        ref_to_nums=[],
+    ),
+    PostData(
+        post_number=9,
+        handle_name="difference",
+        posted_at=test_date,
+        likes=0,
+        content="diff 2",
+        image_urls=[],
+        ref_to_nums=[],
+    ),
+    PostData(
+        post_number=11,
+        handle_name="difference",
+        posted_at=test_date,
+        likes=0,
+        content="diff 3",
+        image_urls=[],
+        ref_to_nums=[],
+    ),
+]
